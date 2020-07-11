@@ -83,6 +83,7 @@ app.post('/api/persons', (req, res) => {
         })
     }
     if (!body.number) {
+        console.log('no number!')
         return res.status(400).json({
             error: 'number is missing'
         })
