@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+const Person = require('./models/person')
 
 
 morgan.token('body', function (req, res) {
@@ -46,19 +48,17 @@ app.get('/info', (req, res) => {
 
 //Get all people in phonebook
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    Person.find({}).then(people => {
+        res.json(people)
+    })
 })
 
 //Get an individual entry
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
-
-    if (person) {
+    console.log('finding by id')
+    Person.findById(req.params.id).then(person => {
         res.json(person)
-    } else {
-        res.status(404).end()
-    }
+    })
 })
 
 //Delete a person
@@ -94,15 +94,15 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    const person = {
+    const person = new Person({
         name: body.name,
-        number: body.number,
-        id: generateId()
-    }
+        number: body.number
+    })
 
-    persons = persons.concat(person)
-    //
-    res.json(person)
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
+    
 })
 
 
