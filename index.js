@@ -13,8 +13,10 @@ const errorHandler = (error, reqeust, response, next) => {
         return response.status(400).send({
             error: 'malformatted id'
         })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({error : error.message})
     }
-    console.log(error.name)
+    console.log('error is ', error.name)
     next(error)
 }
 
@@ -28,25 +30,7 @@ app.use(express.static('build'))
 app.use(morgan(
     ':method :url :status :res[content-length] - :response-time :body'))
 app.use(cors())
-let persons = [
-
-    {
-        name: "tommy",
-        number: "edison",
-        id: 2
-    },
-    {
-        name: "ear doughball",
-        number: "",
-        id: 3
-    },
-    {
-        name: "Ready Frederico",
-        number: "99",
-        id: 4
-    }
-
-]
+let persons = []
 
 
 
@@ -101,7 +85,7 @@ app.put('/api/persons/:id', (request, response, next) => {
         number: body.number
     }
 
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    Person.findByIdAndUpdate(request.params.id, person, { new: true }, {runValidators: true})
         .then(updatedPerson => {
             response.json(updatedPerson)
         })
@@ -111,7 +95,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
 
 //Add a person
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
 
     const body = req.body
     if (!body.name) {
@@ -139,6 +123,7 @@ app.post('/api/persons', (req, res) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
+    .catch(error => next(error))
 
 })
 
